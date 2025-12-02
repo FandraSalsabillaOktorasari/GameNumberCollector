@@ -13,6 +13,10 @@ public class GameGUI extends JFrame {
     private JButton btnSubmit, btnReset;
     private JTextArea txtLog;
 
+    /**
+     * Constructor: Initializes the game objects and builds the UI.
+     * It also starts the first game session immediately.
+     */
     public GameGUI() {
         game = new BinaryGame();
         player = new Player(7);
@@ -21,6 +25,11 @@ public class GameGUI extends JFrame {
         startNewSession();
     }
 
+    /**
+     * Configures the window properties, layout, and adds all UI components.
+     * This method handles the visual design (colors, fonts, borders) and
+     * registers event listeners for buttons.
+     */
     private void initUI() {
         setTitle("Project PBO: Binary Search Game");
         setSize(400, 580);
@@ -33,7 +42,7 @@ public class GameGUI extends JFrame {
         mainPanel.setBackground(new Color(245, 245, 245));
 
         // 1. HEADER
-        lblTitle = new JLabel("TEBAK ANGKA OOP");
+        lblTitle = new JLabel("TEBAK ANGKA");
         lblTitle.setFont(new Font("SansSerif", Font.BOLD, 22));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -110,6 +119,16 @@ public class GameGUI extends JFrame {
         txtInput.addActionListener(e -> prosesTebakan());
     }
 
+    /**
+     * Resets the game state for a new round.
+     * <p>
+     * Actions performed:
+     * 1. Generates a new random target number.
+     * 2. Resets player lives to the maximum.
+     * 3. Clears the log and input fields.
+     * 4. Enables game controls.
+     * </p>
+     */
     private void startNewSession() {
         game.generateNumber();
         player.reset(7);
@@ -122,10 +141,23 @@ public class GameGUI extends JFrame {
         txtInput.requestFocus();
     }
 
+    /**
+     * Updates the UI label showing the remaining lives.
+     */
     private void updateUIStatus() {
         lblKesempatan.setText("Nyawa: " + player.getLives());
     }
 
+    /**
+     * The core logic method triggered when the user submits a guess.
+     * <p>
+     * Logic Flow:
+     * 1. Validates the input (must be a number).
+     * 2. Checks for an <b>Exact Match</b> (Auto-Win condition).
+     * 3. If not an exact match, processes the selected inequality condition (>= or <=).
+     * 4. Deducts a life and checks for Game Over.
+     * </p>
+     */
     private void prosesTebakan() {
         String inputStr = txtInput.getText();
         if (inputStr.isEmpty() || !inputStr.matches("\\d+")) {
@@ -181,6 +213,12 @@ public class GameGUI extends JFrame {
         txtInput.requestFocus();
     }
 
+    /**
+     * Helper method to update the feedback label and log area based on the result.
+     *
+     * @param aksi   The string representation of the action (e.g., "Secret >= 50?").
+     * @param isTrue The boolean result of the comparison.
+     */
     private void tampilkanHasil(String aksi, boolean isTrue) {
         if (isTrue) {
             lblFeedback.setText("✅ YA, BENAR.");
@@ -193,6 +231,12 @@ public class GameGUI extends JFrame {
         }
     }
 
+    /**
+     * Enables or disables game controls (input, submit button) depending on the game state.
+     *
+     * @param enable {@code true} to enable controls (during game),
+     * {@code false} to disable (game over/win).
+     */
     private void enableControls(boolean enable) {
         txtInput.setEnabled(enable);
         btnSubmit.setEnabled(enable);
@@ -200,6 +244,12 @@ public class GameGUI extends JFrame {
         btnReset.setEnabled(!enable);
     }
 
+    /**
+     * Handles the end of the game (Win or Lose).
+     * Disables controls and shows a popup if the player won.
+     *
+     * @param win {@code true} if the player won, {@code false} if they lost.
+     */
     private void endGame(boolean win) {
         enableControls(false);
         if(win) JOptionPane.showMessageDialog(this, "Selamat! Anda menemukan angkanya.");
