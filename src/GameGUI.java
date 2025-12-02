@@ -3,32 +3,39 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class GameGUI extends JFrame {
-    private BinaryGame game;
+    /**
+     * The strategy object defining the current game rules (Range, Lives, Logic).
+     */
+    private GameMode gameMode;
+
+    /**
+     * The object managing the player's state (current lives).
+     */
     private Player player;
 
-    // Komponen UI
+    // components
     private JLabel lblTitle, lblKesempatan, lblFeedback;
-    private JComboBox<String> cmbMode;
+    // private JComboBox<String> cmbMode;
     private JTextField txtInput;
     private JButton btnSubmit, btnReset;
     private JTextArea txtLog;
 
     /**
-     * Constructor: Initializes the game objects and builds the UI.
-     * It also starts the first game session immediately.
+     * Constructor: Initializes the game window with a specific difficulty mode.
+     * * @param mode The concrete {@link GameMode} implementation (e.g., EasyMode, HardMode)
+     * that dictates the rules for this session.
      */
-    public GameGUI() {
-        game = new BinaryGame();
-        player = new Player(7);
+    public GameGUI(GameMode mode) {
+        this.gameMode = mode;
+        player = new Player(mode.getInitialLives());
 
         initUI();
         startNewSession();
     }
 
     /**
-     * Configures the window properties, layout, and adds all UI components.
-     * This method handles the visual design (colors, fonts, borders) and
-     * registers event listeners for buttons.
+     * Configures the JFrame properties, layout managers, and UI components.
+     * This method handles the visual styling and registers event listeners.
      */
     private void initUI() {
         setTitle("Project PBO: Binary Search Game");
@@ -41,33 +48,31 @@ public class GameGUI extends JFrame {
         mainPanel.setBorder(new EmptyBorder(20, 30, 20, 30));
         mainPanel.setBackground(new Color(245, 245, 245));
 
-        // 1. HEADER
-        lblTitle = new JLabel("TEBAK ANGKA");
+        // header
+        lblTitle = new JLabel("Guess the Number!");
         lblTitle.setFont(new Font("SansSerif", Font.BOLD, 22));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        lblKesempatan = new JLabel("Nyawa: 7");
+        lblKesempatan = new JLabel("Lives: 7");
         lblKesempatan.setFont(new Font("SansSerif", Font.BOLD, 16));
         lblKesempatan.setForeground(new Color(220, 50, 50));
         lblKesempatan.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 2. INPUT (Hanya 2 Opsi Sekarang)
-        // \u2265 adalah kode unicode untuk simbol >=
-        // \u2264 adalah kode unicode untuk simbol <=
+        // input 
         String[] options = {
                 "1. Apakah \u2265 X ? (Lebih Besar / Sama)",
                 "2. Apakah \u2264 X ? (Lebih Kecil / Sama)"
         };
-        cmbMode = new JComboBox<>(options);
-        cmbMode.setMaximumSize(new Dimension(350, 35));
+        // cmbMode = new JComboBox<>(options);
+        // cmbMode.setMaximumSize(new Dimension(350, 35));
 
         txtInput = new JTextField();
         txtInput.setFont(new Font("SansSerif", Font.PLAIN, 18));
         txtInput.setMaximumSize(new Dimension(350, 40));
         txtInput.setHorizontalAlignment(JTextField.CENTER);
 
-        // 3. BUTTON
-        btnSubmit = new JButton("CEK PERNYATAAN");
+        // take a guess button 
+        btnSubmit = new JButton("Take a Guess");
         btnSubmit.setFont(new Font("SansSerif", Font.BOLD, 14));
         btnSubmit.setBackground(new Color(50, 120, 220));
         btnSubmit.setForeground(Color.WHITE);
@@ -75,23 +80,23 @@ public class GameGUI extends JFrame {
         btnSubmit.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnSubmit.setMaximumSize(new Dimension(350, 40));
 
-        // 4. FEEDBACK
-        lblFeedback = new JLabel("Mulai permainan...");
+        // feedback
+        lblFeedback = new JLabel("starting...");
         lblFeedback.setFont(new Font("SansSerif", Font.BOLD, 14));
         lblFeedback.setForeground(Color.DARK_GRAY);
         lblFeedback.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblFeedback.setBorder(new EmptyBorder(10, 0, 10, 0));
 
-        // 5. LOG
+        // guess log
         txtLog = new JTextArea(8, 20);
         txtLog.setEditable(false);
         txtLog.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scrollPane = new JScrollPane(txtLog);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Log Aktivitas"));
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Guess History"));
         scrollPane.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // 6. RESET
-        btnReset = new JButton("ULANGI GAME");
+        // reset button
+        btnReset = new JButton("Restart");
         btnReset.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnReset.setEnabled(false);
 
@@ -99,7 +104,7 @@ public class GameGUI extends JFrame {
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(lblKesempatan);
         mainPanel.add(Box.createVerticalStrut(20));
-        mainPanel.add(cmbMode);
+        // mainPanel.add(cmbMode);
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(txtInput);
         mainPanel.add(Box.createVerticalStrut(15));
@@ -120,20 +125,17 @@ public class GameGUI extends JFrame {
     }
 
     /**
-     * Resets the game state for a new round.
+     * Resets the game session state.
      * <p>
-     * Actions performed:
-     * 1. Generates a new random target number.
-     * 2. Resets player lives to the maximum.
-     * 3. Clears the log and input fields.
-     * 4. Enables game controls.
+     * Triggers the GameMode to generate a new random number, resets player lives,
+     * clears the log, and re-enables controls.
      * </p>
      */
     private void startNewSession() {
-        game.generateNumber();
-        player.reset(7);
+        gameMode.generateNumber();
+        player.reset(gameMode.getInitialLives());
         updateUIStatus();
-        lblFeedback.setText("Game baru dimulai!");
+        lblFeedback.setText("New game started!");
         lblFeedback.setForeground(Color.BLACK);
         txtLog.setText("");
         txtInput.setText("");
@@ -142,116 +144,86 @@ public class GameGUI extends JFrame {
     }
 
     /**
-     * Updates the UI label showing the remaining lives.
+     * Updates the UI label to reflect the current number of lives remaining.
      */
     private void updateUIStatus() {
-        lblKesempatan.setText("Nyawa: " + player.getLives());
+        lblKesempatan.setText("Lives: " + player.getLives());
     }
 
     /**
-     * The core logic method triggered when the user submits a guess.
+     * The main game loop logic triggered by user submission.
      * <p>
-     * Logic Flow:
-     * 1. Validates the input (must be a number).
-     * 2. Checks for an <b>Exact Match</b> (Auto-Win condition).
-     * 3. If not an exact match, processes the selected inequality condition (>= or <=).
-     * 4. Deducts a life and checks for Game Over.
+     * 1. Validates input (must be numeric).
+     * 2. Delegates comparison to {@code gameMode.checkGuess()}.
+     * 3. Provides feedback ("Too Low", "Too Big", or "Correct").
+     * 4. Updates logs and checks for Game Over / Win conditions.
      * </p>
      */
     private void prosesTebakan() {
         String inputStr = txtInput.getText();
+        
         if (inputStr.isEmpty() || !inputStr.matches("\\d+")) {
-            lblFeedback.setText("⚠️ Masukkan angka valid!");
+            lblFeedback.setText("⚠️ Input valid number!");
             return;
         }
 
-        int nilaiX = Integer.parseInt(inputStr);
-        int mode = cmbMode.getSelectedIndex(); // 0 = (>=), 1 = (<=)
+        int guess = Integer.parseInt(inputStr);
 
-        // 1. AUTO-WIN CHECK (Cek Equality Dulu)
-        // Walaupun user memilih opsi "Lebih Besar/Kecil", jika angkanya TEPAT,
-        // kita anggap user MENANG. Ini mekanisme pengganti tombol "Tebak".
-        GuessResult directCheck = game.checkGuess(nilaiX);
+        GuessResult result = gameMode.checkGuess(guess);
 
-        if (directCheck == GuessResult.CORRECT) {
-            lblFeedback.setText("🎉 BENAR! Jawabannya " + nilaiX);
+        if (result == GuessResult.CORRECT) {
+            lblFeedback.setText("Bingo! You nailed it! The number was " + guess);
             lblFeedback.setForeground(new Color(0, 150, 0));
-            txtLog.append("✓ Input " + nilaiX + " -> TEPAT SEKALI! (WIN)\n");
+            txtLog.append("✓ " + guess + " -> Correct! (WIN)\n");
             endGame(true);
-            return;
-        }
-
-        // 2. Logic Pernyataan (Hinting)
-        String aksi = "";
-        boolean statementBenar = false;
-
-        switch (mode) {
-            case 0: // Apakah >= X ?
-                statementBenar = game.isGreaterThanOrEqual(nilaiX);
-                aksi = "Rahasia \u2265 " + nilaiX + "?"; // Simbol >=
-                tampilkanHasil(aksi, statementBenar);
-                break;
-
-            case 1: // Apakah <= X ?
-                statementBenar = game.isLessThanOrEqual(nilaiX);
-                aksi = "Rahasia \u2264 " + nilaiX + "?"; // Simbol <=
-                tampilkanHasil(aksi, statementBenar);
-                break;
-        }
-
-        // 3. Kurangi Nyawa & Cek Kalah
-        player.decreaseLife();
-        updateUIStatus();
-
-        if (!player.isAlive()) {
-            lblFeedback.setText("💀 GAME OVER! Angka: " + game.getTargetNumber());
-            lblFeedback.setForeground(Color.RED);
-            endGame(false);
-        }
-
-        txtInput.setText("");
-        txtInput.requestFocus();
-    }
-
-    /**
-     * Helper method to update the feedback label and log area based on the result.
-     *
-     * @param aksi   The string representation of the action (e.g., "Secret >= 50?").
-     * @param isTrue The boolean result of the comparison.
-     */
-    private void tampilkanHasil(String aksi, boolean isTrue) {
-        if (isTrue) {
-            lblFeedback.setText("✅ YA, BENAR.");
-            lblFeedback.setForeground(new Color(0, 100, 0));
-            txtLog.append("✓ " + aksi + " -> YA\n");
         } else {
-            lblFeedback.setText("❌ TIDAK / SALAH.");
-            lblFeedback.setForeground(Color.RED);
-            txtLog.append("✕ " + aksi + " -> TIDAK\n");
+            player.decreaseLife();
+            updateUIStatus();
+
+            String hint = "";
+            if (result == GuessResult.TOO_LOW) {
+                hint = "Too Low";
+                lblFeedback.setForeground(new Color(200, 100, 0));
+            } else {
+                hint = "Too Big";
+                lblFeedback.setForeground(new Color(200, 50, 50));
+            }
+            
+            lblFeedback.setText("❌ " + hint + "! Try again.");
+            txtLog.append("• " + guess + " -> " + hint + "\n");
+
+            // game over check
+            if (!player.isAlive()) {
+                lblFeedback.setText("💀 GAME OVER! Number: " + gameMode.getTargetNumber());
+                lblFeedback.setForeground(Color.RED);
+                endGame(false);
+            } else {
+                txtInput.setText("");
+                txtInput.requestFocus();
+            }
         }
     }
 
     /**
-     * Enables or disables game controls (input, submit button) depending on the game state.
+     * Toggles the interactive state of the game controls.
      *
-     * @param enable {@code true} to enable controls (during game),
+     * @param enable {@code true} to enable inputs (during game),
      * {@code false} to disable (game over/win).
      */
     private void enableControls(boolean enable) {
         txtInput.setEnabled(enable);
         btnSubmit.setEnabled(enable);
-        cmbMode.setEnabled(enable);
+        // cmbMode.setEnabled(enable);
         btnReset.setEnabled(!enable);
     }
 
     /**
-     * Handles the end of the game (Win or Lose).
-     * Disables controls and shows a popup if the player won.
+     * Finalizes the game session.
      *
-     * @param win {@code true} if the player won, {@code false} if they lost.
+     * @param win {@code true} if the player won, {@code false} if lost.
      */
     private void endGame(boolean win) {
         enableControls(false);
-        if(win) JOptionPane.showMessageDialog(this, "Selamat! Anda menemukan angkanya.");
+        if(win) JOptionPane.showMessageDialog(this, "Bingo! You nailed it!");
     }
 }
