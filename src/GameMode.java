@@ -1,4 +1,4 @@
-public abstract class GameMode {
+public abstract class GameMode implements GameMechanics {
     /**
      * The hidden target number that the player is trying to guess.
      * Marked as {@code protected} to allow direct access by subclasses if necessary.
@@ -29,6 +29,7 @@ public abstract class GameMode {
      * Logic: Generates a number between <b>1</b> and <b>{@code getMaxRange()}</b> (inclusive).
      * </p>
      */
+    @Override
     public void generateNumber() {
         this.targetNumber = (int) (Math.random() * getMaxRange()) + 1;
     }
@@ -48,6 +49,7 @@ public abstract class GameMode {
      * @return A {@link GuessResult} enum indicating if the guess was
      * {@code CORRECT}, {@code TOO_LOW}, or {@code TOO_HIGH}.
      */
+    @Override
     public GuessResult checkGuess(int guess) {
         if (guess == targetNumber) return GuessResult.CORRECT;
         if (guess < targetNumber) return GuessResult.TOO_LOW;
